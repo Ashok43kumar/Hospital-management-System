@@ -70,7 +70,7 @@ class BillsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bills
-        fields = ['b_id', 'patient', 'patient_details', 'amount', 'generated_at']
+        fields = ['b_id', 'patient', 'patient_details', 'amount', 'status', 'generated_at']
 
 
 class RecordsSerializer(serializers.ModelSerializer):

@@ -30,6 +30,7 @@ urlpatterns = [
     path('consults/create/', views.create_consult, name='create_consult'),
     path('patient/<int:pk>/reports/', views.patient_reports, name='patient_reports'),
     path('bills/generate/', views.generate_bill, name='generate_bill'),
+    path('employees/add/', views.add_employee, name='add_employee'),
 
     # Router URLs
     path('', include(router.urls)),

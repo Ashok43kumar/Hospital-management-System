@@ -25,8 +25,11 @@ const AdminDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [availableRooms, setAvailableRooms] = useState([]);
   const [allAppointments, setAllAppointments] = useState([]);
-  const [allBills, setAllBills] = useState([]);
   const [allConsults, setAllConsults] = useState([]);
+  const [allBills, setAllBills] = useState([]);
+  const [allDoctors, setAllDoctors] = useState([]);
+  const [allNurses, setAllNurses] = useState([]);
+  const [allReceptionists, setAllReceptionists] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
@@ -38,6 +41,15 @@ const AdminDashboard = () => {
   const [selectedBillPatient, setSelectedBillPatient] = useState('');
   const [billLoading, setBillLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  // Employee Modal State
+  const [showEmployeeModal, setShowEmployeeModal] = useState(false);
+  const [empLoading, setEmpLoading] = useState(false);
+  const [empForm, setEmpForm] = useState({
+    name: '', sex: 'M', salary: '', mob_no: '',
+    state: '', city: '', pin_no: '',
+    role: 'Doctor', dept: '', qualification: ''
+  });
 
   /**
    * Helper: safely extract array from a DRF response that may be
@@ -54,7 +66,7 @@ const AdminDashboard = () => {
       setLoading(true);
       setError('');
 
-      let rooms = [], bills = [], doctors = [], nurses = [], patientsList = [], consults = [];
+      let rooms = [], bills = [], doctors = [], nurses = [], patientsList = [], consults = [], receptionists = [];
 
       // ── Fetch each endpoint independently ──
       try {
@@ -105,6 +117,18 @@ const AdminDashboard = () => {
         console.error('[AdminDash] /consults/ FAILED:', err.response?.status, err.response?.data);
       }
 
+      try {
+        const res = await api.get('/receptionists/');
+        console.log('[AdminDash] /receptionists/ raw:', res.data);
+        receptionists = extractArray(res.data);
+        setAllReceptionists(receptionists);
+      } catch (err) {
+        console.error('[AdminDash] /receptionists/ FAILED:', err.response?.status, err.response?.data);
+      }
+
+      setAllDoctors(doctors);
+      setAllNurses(nurses);
+
       setPatients(patientsList);
 
       const freeRooms = rooms.filter(r => r.availability);
@@ -132,7 +156,7 @@ const AdminDashboard = () => {
       }));
 
       const totalRev = bills.reduce((acc, bill) => acc + parseFloat(bill.amount || 0), 0);
-      const activeStaffCount = doctors.length + nurses.length;
+      const activeStaffCount = doctors.length + nurses.length + receptionists.length;
       const pendingCount = Math.max(Math.floor(patientsList.length * 0.1), 0);
 
       setStats({
@@ -196,6 +220,27 @@ const AdminDashboard = () => {
       setError(`Failed to generate bill: ${err.response?.data?.error || err.message}`);
     } finally {
       setBillLoading(false);
+    }
+  };
+
+  const handleAddEmployee = async (e) => {
+    e.preventDefault();
+    setEmpLoading(true);
+    try {
+      await api.post('/employees/add/', empForm);
+      showToast(`${empForm.role} added successfully!`);
+      setShowEmployeeModal(false);
+      setEmpForm({
+        name: '', sex: 'M', salary: '', mob_no: '',
+        state: '', city: '', pin_no: '',
+        role: 'Doctor', dept: '', qualification: ''
+      });
+      fetchDashboardData();
+    } catch (err) {
+      console.error("Failed to add employee:", err.response?.data || err.message);
+      showToast(`Error: ${err.response?.data?.error || err.message}`, 'error');
+    } finally {
+      setEmpLoading(false);
     }
   };
 
@@ -353,6 +398,135 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {/* Employee Modal */}
+      {showEmployeeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-surface-container p-xl rounded-xl border border-outline-variant w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="font-headline-md text-headline-md mb-md text-on-surface">Add New Employee</h3>
+            <form onSubmit={handleAddEmployee} className="grid grid-cols-1 md:grid-cols-2 gap-md">
+              <div className="md:col-span-2">
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Full Name</label>
+                <input 
+                  type="text" required
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.name}
+                  onChange={(e) => setEmpForm({...empForm, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Role</label>
+                <select 
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.role}
+                  onChange={(e) => setEmpForm({...empForm, role: e.target.value})}
+                >
+                  <option value="Doctor">Doctor</option>
+                  <option value="Nurse">Nurse</option>
+                  <option value="Receptionist">Receptionist</option>
+                </select>
+              </div>
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Gender</label>
+                <select 
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.sex}
+                  onChange={(e) => setEmpForm({...empForm, sex: e.target.value})}
+                >
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
+                  <option value="O">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Salary (₹)</label>
+                <input 
+                  type="number" required
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.salary}
+                  onChange={(e) => setEmpForm({...empForm, salary: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Mobile Number</label>
+                <input 
+                  type="text" required
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.mob_no}
+                  onChange={(e) => setEmpForm({...empForm, mob_no: e.target.value})}
+                />
+              </div>
+              {empForm.role === 'Doctor' && (
+                <>
+                  <div>
+                    <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Department</label>
+                    <input 
+                      type="text" required
+                      className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                      value={empForm.dept}
+                      onChange={(e) => setEmpForm({...empForm, dept: e.target.value})}
+                      placeholder="e.g. Cardiology"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Qualification</label>
+                    <input 
+                      type="text" required
+                      className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                      value={empForm.qualification}
+                      onChange={(e) => setEmpForm({...empForm, qualification: e.target.value})}
+                      placeholder="e.g. MBBS, MD"
+                    />
+                  </div>
+                </>
+              )}
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">State</label>
+                <input 
+                  type="text" required
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.state}
+                  onChange={(e) => setEmpForm({...empForm, state: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">City</label>
+                <input 
+                  type="text" required
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.city}
+                  onChange={(e) => setEmpForm({...empForm, city: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Pin Code</label>
+                <input 
+                  type="text" required
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface"
+                  value={empForm.pin_no}
+                  onChange={(e) => setEmpForm({...empForm, pin_no: e.target.value})}
+                />
+              </div>
+              <div className="md:col-span-2 flex justify-end gap-sm mt-md">
+                <button 
+                  type="button" 
+                  onClick={() => setShowEmployeeModal(false)}
+                  className="px-md py-sm border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-highest"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={empLoading}
+                  className="px-md py-sm bg-primary text-on-primary rounded-lg hover:opacity-90 min-w-[120px]"
+                >
+                  {empLoading ? 'Saving...' : 'Add Employee'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <nav className="bg-surface-container-low dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim md:w-64 border-r border-outline-variant flex flex-col py-lg gap-md shrink-0 hidden md:flex min-h-screen sticky top-0">
         <div className="px-lg flex items-center gap-md mb-md">
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
@@ -392,6 +566,13 @@ const AdminDashboard = () => {
           >
             <span className="material-symbols-outlined">payments</span>
             <span>Billing</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('employees')}
+            className={`flex items-center gap-md px-md py-sm rounded-lg font-label-md text-label-md transition-all cursor-pointer ${activeTab === 'employees' ? 'bg-secondary-container text-on-secondary-container border-l-4 border-primary' : 'text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface'}`}
+          >
+            <span className="material-symbols-outlined">badge</span>
+            <span>Employees</span>
           </button>
         </div>
 
@@ -435,10 +616,12 @@ const AdminDashboard = () => {
             <h2 className="font-headline-lg text-headline-lg text-on-surface">
               {activeTab === 'dashboard' ? 'Overview Dashboard' : 
                activeTab === 'patients' ? 'Patient Records' :
+               activeTab === 'employees' ? 'Employee Management' :
                activeTab === 'appointments' ? 'Appointment Management' : 'Billing & Invoices'}
             </h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-xs">
               {activeTab === 'dashboard' ? 'Real-time hospital metrics and command center.' : 
+               activeTab === 'employees' ? 'Manage doctors, nurses, and hospital staff.' :
                `Manage and track ${activeTab} within the system.`}
             </p>
           </div>
@@ -451,6 +634,15 @@ const AdminDashboard = () => {
                 >
                   <span className="material-symbols-outlined">add</span>
                   Create Bill
+                </button>
+              )}
+              {activeTab === 'employees' && (
+                <button 
+                  onClick={() => setShowEmployeeModal(true)}
+                  className="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md text-label-md flex items-center gap-sm hover:opacity-90 transition-all shrink-0"
+                >
+                  <span className="material-symbols-outlined">person_add</span>
+                  Add Employee
                 </button>
               )}
               <div className="relative w-full md:w-64">
@@ -697,6 +889,7 @@ const AdminDashboard = () => {
                     <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Bill ID</th>
                     <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Patient ID</th>
                     <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Amount</th>
+                    <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Status</th>
                     <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Generated Date</th>
                   </tr>
                 </thead>
@@ -724,6 +917,13 @@ const AdminDashboard = () => {
                           <td className="px-lg py-md font-body-md text-body-md text-on-surface">B-{b.b_id}</td>
                           <td className="px-lg py-md font-body-md text-body-md text-on-surface">P-{b.patient}</td>
                           <td className="px-lg py-md font-body-md text-body-md text-on-surface">₹{b.amount}</td>
+                          <td className="px-lg py-md">
+                            <span className={`px-sm py-xs rounded-full font-label-sm text-label-sm ${
+                              b.status === 'Paid' ? 'bg-success-container text-on-success-container' : 'bg-error-container text-on-error-container'
+                            }`}>
+                              {b.status || 'Pending'}
+                            </span>
+                          </td>
                           <td className="px-lg py-md font-body-md text-body-md text-on-surface">{b.generated_at ? new Date(b.generated_at).toLocaleDateString() : 'N/A'}</td>
                         </tr>
                       ))
@@ -736,6 +936,103 @@ const AdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {activeTab === 'employees' && (
+            <div className="flex flex-col gap-lg">
+              {/* Stats Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
+                <div className="bg-surface-container p-md rounded-xl border border-outline-variant flex items-center gap-md">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined">medical_services</span>
+                  </div>
+                  <div>
+                    <p className="text-on-surface-variant font-label-sm">Total Doctors</p>
+                    <p className="text-on-surface font-headline-sm">{allDoctors.length}</p>
+                  </div>
+                </div>
+                <div className="bg-surface-container p-md rounded-xl border border-outline-variant flex items-center gap-md">
+                  <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                    <span className="material-symbols-outlined">support_agent</span>
+                  </div>
+                  <div>
+                    <p className="text-on-surface-variant font-label-sm">Total Nurses</p>
+                    <p className="text-on-surface font-headline-sm">{allNurses.length}</p>
+                  </div>
+                </div>
+                <div className="bg-surface-container p-md rounded-xl border border-outline-variant flex items-center gap-md">
+                  <div className="w-12 h-12 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+                    <span className="material-symbols-outlined">desktop_windows</span>
+                  </div>
+                  <div>
+                    <p className="text-on-surface-variant font-label-sm">Receptionists</p>
+                    <p className="text-on-surface font-headline-sm">{allReceptionists.length}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Employee Lists */}
+              <div className="bg-surface-container border border-outline-variant rounded-xl overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-surface-container-high">
+                    <tr>
+                      <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Name</th>
+                      <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Role</th>
+                      <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Department / ID</th>
+                      <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Contact</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant">
+                    {[...allDoctors, ...allNurses, ...allReceptionists]
+                      .filter(emp => {
+                        const name = emp.employee_details?.name || emp.e_id?.name || '';
+                        return name.toLowerCase().includes(searchTerm.toLowerCase());
+                      })
+                      .map((emp, idx) => {
+                        const isDoctor = 'doctor_id' in emp;
+                        const isNurse = 'nurse_id' in emp;
+                        const details = emp.employee_details || emp.e_id;
+                        return (
+                          <tr key={idx} className="hover:bg-surface-container-highest transition-colors">
+                            <td className="px-lg py-md">
+                              <p className="font-body-md text-body-md text-on-surface font-bold">{details?.name}</p>
+                              <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">{details?.sex === 'M' ? 'Male' : 'Female'}</p>
+                            </td>
+                            <td className="px-lg py-md">
+                              <span className={`px-sm py-xs rounded-full font-label-sm text-label-sm ${
+                                isDoctor ? 'bg-primary-container text-on-primary-container' : 
+                                isNurse ? 'bg-secondary-container text-on-secondary-container' : 'bg-tertiary-container text-on-tertiary-container'
+                              }`}>
+                                {isDoctor ? 'Doctor' : isNurse ? 'Nurse' : 'Receptionist'}
+                              </span>
+                            </td>
+                            <td className="px-lg py-md font-body-md text-body-md text-on-surface">
+                              {isDoctor ? (
+                                <div>
+                                  <p>{emp.dept}</p>
+                                  <p className="text-label-sm text-on-surface-variant">{emp.qualification}</p>
+                                </div>
+                              ) : (
+                                <span>ID: {isNurse ? emp.nurse_id : emp.receptionist_id}</span>
+                              )}
+                            </td>
+                            <td className="px-lg py-md font-body-md text-body-md text-on-surface">
+                              <p>{details?.mob_no}</p>
+                              <p className="text-label-sm text-on-surface-variant">{details?.city}, {details?.state}</p>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    }
+                    {[...allDoctors, ...allNurses, ...allReceptionists].length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="px-lg py-xl text-center text-on-surface-variant font-body-md">No employees found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

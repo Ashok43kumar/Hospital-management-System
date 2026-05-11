@@ -144,10 +144,15 @@ const PatientDashboard = () => {
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
   };
 
-  const handlePayBill = (billId) => {
-    // Simulate payment logic
-    setPaidBills(prev => new Set([...prev, billId]));
-    showToast("Payment successful! Bill marked as Paid.");
+  const handlePayBill = async (billId) => {
+    try {
+      await api.patch(`/bills/${billId}/`, { status: 'Paid' });
+      showToast("Payment successful! Bill marked as Paid.");
+      fetchPatientData();
+    } catch (err) {
+      console.error("Payment failed:", err.response?.data || err.message);
+      showToast("Payment failed. Please try again.", "error");
+    }
   };
 
   if (loading) {
@@ -469,11 +474,11 @@ const PatientDashboard = () => {
                           <td className="px-lg py-md font-body-md text-body-md text-on-surface">₹{bill.amount}</td>
                           <td className="px-lg py-md font-body-md text-body-md text-on-surface">{bill.generated_at ? new Date(bill.generated_at).toLocaleDateString() : 'N/A'}</td>
                           <td className="px-lg py-md">
-                            {paidBills.has(bill.b_id) ? (
+                            {bill.status === 'Paid' ? (
                               <span className="px-sm py-xs bg-success-container text-on-success-container rounded-full font-label-sm text-label-sm">Paid</span>
                             ) : (
                               <div className="flex items-center gap-sm">
-                                <span className="px-sm py-xs bg-error-container text-on-error-container rounded-full font-label-sm text-label-sm">Unpaid</span>
+                                <span className="px-sm py-xs bg-error-container text-on-error-container rounded-full font-label-sm text-label-sm">Pending</span>
                                 <button 
                                   onClick={() => handlePayBill(bill.b_id)}
                                   className="text-primary hover:underline font-label-sm text-label-sm"

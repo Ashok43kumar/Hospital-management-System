@@ -216,6 +216,55 @@ def discharge_patient(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+def add_employee(request):
+    """
+    POST /api/employees/add/
+    Atomic creation of Employee + Subtype (Doctor/Nurse/Receptionist).
+    Payload: {
+      "name": "...", "sex": "M/F/O", "salary": 50000, "mob_no": "...",
+      "state": "...", "city": "...", "pin_no": "...",
+      "role": "Doctor", "dept": "...", "qualification": "..."
+    }
+    """
+    data = request.data
+    role = data.get('role')
+    
+    if not role:
+        return Response({"error": "role is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            # 1. Create Base Employee
+            employee = Employee.objects.create(
+                name=data.get('name'),
+                sex=data.get('sex'),
+                salary=data.get('salary'),
+                mob_no=data.get('mob_no'),
+                state=data.get('state'),
+                city=data.get('city'),
+                pin_no=data.get('pin_no')
+            )
+
+            # 2. Create Subtype
+            if role == 'Doctor':
+                Doctor.objects.create(
+                    e_id=employee,
+                    dept=data.get('dept', 'General'),
+                    qualification=data.get('qualification', 'MBBS')
+                )
+            elif role == 'Nurse':
+                Nurse.objects.create(e_id=employee)
+            elif role == 'Receptionist':
+                Receptionist.objects.create(e_id=employee)
+            else:
+                raise Exception(f"Invalid role: {role}")
+
+            return Response({"message": f"{role} added successfully."}, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def create_consult(request):

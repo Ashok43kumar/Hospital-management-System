@@ -191,6 +191,7 @@ class Bills(models.Model):
         related_name='bills',
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=20, default='Pending')  # 'Pending' or 'Paid'
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
