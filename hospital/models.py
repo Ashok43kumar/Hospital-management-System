@@ -28,6 +28,7 @@ class Patient(models.Model):
     age = models.PositiveIntegerField()
     dob = models.DateField()
     mob_no = models.CharField(max_length=15)
+    email = models.EmailField(max_length=255, null=True, blank=True, unique=True)
 
     class Meta:
         db_table = 'patient'

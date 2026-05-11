@@ -33,6 +33,13 @@ class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        email = self.request.query_params.get('email')
+        if email:
+            queryset = queryset.filter(email=email)
+        return queryset
+
 
 class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = Employee.objects.all()

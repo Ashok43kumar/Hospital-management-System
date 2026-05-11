@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vitalis HMS - Patient Authentication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-on-surface": "#2a3043",
+                      "secondary-fixed": "#dae2fd",
+                      "outline": "#8c909f",
+                      "on-error-container": "#ffdad6",
+                      "surface-dim": "#0c1324",
+                      "secondary": "#bec6e0",
+                      "primary-fixed": "#d8e2ff",
+                      "on-primary": "#002e6a",
+                      "on-surface-variant": "#c2c6d6",
+                      "surface-container-high": "#23293c",
+                      "outline-variant": "#424754",
+                      "on-primary-fixed-variant": "#004395",
+                      "background": "#0c1324",
+                      "tertiary-container": "#8292aa",
+                      "on-secondary-fixed-variant": "#3f465c",
+                      "on-secondary": "#283044",
+                      "on-surface": "#dce1fb",
+                      "surface-container-highest": "#2e3447",
+                      "surface-container": "#191f31",
+                      "secondary-container": "#3f465c",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "error-container": "#93000a",
+                      "tertiary": "#b7c8e1",
+                      "surface-container-lowest": "#070d1f",
+                      "on-tertiary-container": "#1a2b3e",
+                      "on-secondary-container": "#adb4ce",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "on-tertiary": "#213145",
+                      "inverse-primary": "#005ac2",
+                      "surface-bright": "#33394c",
+                      "primary-fixed-dim": "#adc6ff",
+                      "on-primary-container": "#00285d",
+                      "primary": "#adc6ff",
+                      "on-primary-fixed": "#001a42",
+                      "inverse-surface": "#dce1fb",
+                      "on-error": "#690005",
+                      "primary-container": "#4d8eff",
+                      "surface-variant": "#2e3447",
+                      "tertiary-fixed": "#d3e4fe",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "surface": "#0c1324",
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "on-background": "#dce1fb",
+                      "error": "#ffb4ab",
+                      "on-secondary-fixed": "#131b2e",
+                      "surface-container-low": "#151b2d",
+                      "surface-tint": "#adc6ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "1.5rem",
+                      "md": "1rem",
+                      "margin-desktop": "2.5rem",
+                      "xs": "0.25rem",
+                      "xl": "2rem",
+                      "margin-mobile": "1rem",
+                      "sm": "0.5rem",
+                      "max-width": "1440px",
+                      "gutter": "1.5rem"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-xl": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-xl": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex items-center justify-center p-md">
+<!-- Main Container -->
+<main class="w-full max-w-[1200px] flex flex-col lg:flex-row bg-surface-container rounded-xl overflow-hidden border border-outline-variant shadow-2xl relative">
+<!-- Left Visual/Brand Panel (Hidden on mobile) -->
+<div class="hidden lg:flex w-1/2 relative bg-surface-container-low flex-col justify-between p-xl border-r border-outline-variant">
+<!-- Background Image -->
+<img alt="Medical Professional Background" class="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-luminosity" data-alt="A sophisticated, high-contrast photograph of a modern medical facility corridor at night. The lighting is moody and technical, emphasizing precision and trust in a healthcare setting. Subtle blue architectural lights illuminate clean, sterile surfaces, creating a 'Midnight Professional' aesthetic. The depth of field blurs the background, focusing on sleek, metallic details in the foreground. The overall mood is calm, secure, and authoritative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQylYP9ikrk24eMPg-KLpsuwPhhrOkmrFo5B8nMiioDLHjPc4P_OhEzpLZrFyDeAcnVnmjxsPeczWz7VljQHjQ-Js26S3kP7EDfNgOMZTNUbfkBRniN0tNsBKEyHzP59z9iWYAH1ZYOs63l-YatrQ5YbO2CoGHofZab0zjw_zp9LPLz-8Xc2oULj7L9LizWRq1xN2905Z0AK65YZKFbvaA7z9SIqjgAVUADkyo6m2kvVsa8zU8xGtYn0WiSWKhk9sWnEmj34anJyHq"/>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-b from-surface-container-lowest/80 to-background/90"></div>
+<!-- Content -->
+<div class="relative z-10">
+<div class="flex items-center gap-sm mb-xl">
+<span class="material-symbols-outlined text-primary text-[32px]">health_and_safety</span>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Vitalis HMS</h1>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary-fixed mt-24 mb-sm">Secure Patient Portal</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                    Access your medical records, manage appointments, and communicate directly with your care team in a secure, encrypted environment.
+                </p>
+</div>
+<div class="relative z-10 flex items-center gap-md">
+<div class="flex -space-x-4">
+<div class="w-10 h-10 rounded-full bg-surface-bright border-2 border-background flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">shield</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-bright border-2 border-background flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">lock</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-bright border-2 border-background flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">verified</span>
+</div>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">HIPAA Compliant &amp; End-to-End Encrypted</p>
+</div>
+</div>
+<!-- Right Authentication Panel -->
+<div class="w-full lg:w-1/2 p-lg md:p-xl flex flex-col justify-center bg-surface relative">
+<!-- Mobile Brand Header -->
+<div class="flex lg:hidden items-center gap-sm mb-xl justify-center">
+<span class="material-symbols-outlined text-primary text-[28px]">health_and_safety</span>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Vitalis HMS</h1>
+</div>
+<div class="w-full max-w-md mx-auto">
+<div class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Welcome Back</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Please enter your credentials to access your portal.</p>
+</div>
+<!-- Auth Tabs -->
+<div class="flex border-b border-outline-variant mb-lg">
+<button class="flex-1 pb-sm font-label-md text-label-md text-primary border-b-2 border-primary">Sign In</button>
+<button class="flex-1 pb-sm font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Create Account</button>
+</div>
+<!-- Form -->
+<form class="space-y-md">
+<!-- Email Input -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs" for="email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">mail</span>
+<input class="w-full bg-background border border-outline-variant rounded-lg py-sm pl-xl pr-sm text-on-surface font-body-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-outline-variant" id="email" placeholder="patient@example.com" type="email"/>
+</div>
+</div>
+<!-- Password Input -->
+<div>
+<div class="flex justify-between items-center mb-xs">
+<label class="block font-label-sm text-label-sm text-on-surface-variant" for="password">Password</label>
+<a class="font-label-sm text-label-sm text-primary hover:text-primary-fixed transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full bg-background border border-outline-variant rounded-lg py-sm pl-xl pr-xl text-on-surface font-body-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-outline-variant" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-sm top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" type="button">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Options -->
+<div class="flex items-center">
+<input class="w-4 h-4 rounded border-outline-variant bg-background text-primary focus:ring-primary focus:ring-offset-background" id="remember" type="checkbox"/>
+<label class="ml-2 font-body-sm text-body-sm text-on-surface-variant" for="remember">Remember this device for 30 days</label>
+</div>
+<!-- Submit Action -->
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-md rounded-lg flex items-center justify-center gap-sm transition-colors mt-lg" type="submit">
+<span class="material-symbols-outlined text-[20px]">login</span>
+                        Secure Login
+                    </button>
+</form>
+<!-- Divider -->
+<div class="relative my-lg">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-sm">
+<span class="px-2 bg-surface text-on-surface-variant font-label-sm text-label-sm">Or continue with</span>
+</div>
+</div>
+<!-- SSO Options -->
+<div class="grid grid-cols-2 gap-md">
+<button class="flex items-center justify-center gap-sm py-sm px-md border border-outline-variant rounded-lg bg-surface hover:bg-surface-container-high transition-colors text-on-surface font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+                        HealthID
+                    </button>
+<button class="flex items-center justify-center gap-sm py-sm px-md border border-outline-variant rounded-lg bg-surface hover:bg-surface-container-high transition-colors text-on-surface font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                        Authenticator
+                    </button>
+</div>
+</div>
+<!-- Footer Links -->
+<div class="mt-xl text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Having trouble? <a class="text-primary hover:underline" href="#">Contact Support</a>
+</p>
+</div>
+</div>
+</main>
+</body></html>

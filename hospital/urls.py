@@ -24,13 +24,13 @@ router.register(r'governs', views.GovernsViewSet)
 router.register(r'maintains', views.MaintainsViewSet)
 
 urlpatterns = [
-    # Router URLs
-    path('', include(router.urls)),
-
-    # Custom Endpoints
+    # Custom Endpoints (must be above router to avoid <pk> conflicts)
     path('patients/admit/', views.admit_patient, name='admit_patient'),
     path('patients/discharge/', views.discharge_patient, name='discharge_patient'),
     path('consults/create/', views.create_consult, name='create_consult'),
     path('patient/<int:pk>/reports/', views.patient_reports, name='patient_reports'),
     path('bills/generate/', views.generate_bill, name='generate_bill'),
+
+    # Router URLs
+    path('', include(router.urls)),
 ]
