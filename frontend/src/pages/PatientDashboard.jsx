@@ -6,6 +6,8 @@ const PatientDashboard = () => {
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [paidBills, setPaidBills] = useState(new Set());
   
   const [activeTab, setActiveTab] = useState('overview');
   const [patient, setPatient] = useState(null);
@@ -135,6 +137,17 @@ const PatientDashboard = () => {
     } finally {
       setBookingLoading(false);
     }
+  };
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
+
+  const handlePayBill = (billId) => {
+    // Simulate payment logic
+    setPaidBills(prev => new Set([...prev, billId]));
+    showToast("Payment successful! Bill marked as Paid.");
   };
 
   if (loading) {
@@ -452,11 +465,23 @@ const PatientDashboard = () => {
                     {bills.length > 0 ? (
                       bills.map((bill, idx) => (
                         <tr key={idx} className="hover:bg-surface-container-highest transition-colors">
-                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">B-{bill.bill_id}</td>
-                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">${bill.amount}</td>
-                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">{bill.bill_date || 'N/A'}</td>
+                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">B-{bill.b_id}</td>
+                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">₹{bill.amount}</td>
+                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">{bill.generated_at ? new Date(bill.generated_at).toLocaleDateString() : 'N/A'}</td>
                           <td className="px-lg py-md">
-                            <span className="px-sm py-xs bg-error-container text-on-error-container rounded-full font-label-sm text-label-sm">Unpaid</span>
+                            {paidBills.has(bill.b_id) ? (
+                              <span className="px-sm py-xs bg-success-container text-on-success-container rounded-full font-label-sm text-label-sm">Paid</span>
+                            ) : (
+                              <div className="flex items-center gap-sm">
+                                <span className="px-sm py-xs bg-error-container text-on-error-container rounded-full font-label-sm text-label-sm">Unpaid</span>
+                                <button 
+                                  onClick={() => handlePayBill(bill.b_id)}
+                                  className="text-primary hover:underline font-label-sm text-label-sm"
+                                >
+                                  Pay Now
+                                </button>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))
@@ -472,7 +497,19 @@ const PatientDashboard = () => {
           )}
         </div>
 
-
+        {/* Toast Notification */}
+        {toast.show && (
+          <div className="fixed bottom-lg right-lg z-[100] animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className={`flex items-center gap-md px-lg py-md rounded-xl shadow-2xl border ${
+              toast.type === 'success' ? 'bg-success-container text-on-success-container border-success/20' : 'bg-error-container text-on-error-container border-error/20'
+            }`}>
+              <span className="material-symbols-outlined">
+                {toast.type === 'success' ? 'check_circle' : 'error'}
+              </span>
+              <p className="font-label-md text-label-md">{toast.message}</p>
+            </div>
+          </div>
+        )}
       </main>
     </div>
 

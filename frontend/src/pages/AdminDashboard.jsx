@@ -31,6 +31,13 @@ const AdminDashboard = () => {
   const [selectedPatient, setSelectedPatient] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
   const [admitLoading, setAdmitLoading] = useState(false);
+  
+  // Billing Modal State
+  const [showBillModal, setShowBillModal] = useState(false);
+  const [billAmount, setBillAmount] = useState('');
+  const [selectedBillPatient, setSelectedBillPatient] = useState('');
+  const [billLoading, setBillLoading] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   /**
    * Helper: safely extract array from a DRF response that may be
@@ -164,6 +171,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
+
+  const handleCreateBill = async (e) => {
+    e.preventDefault();
+    if (!selectedBillPatient || !billAmount) return;
+
+    setBillLoading(true);
+    try {
+      await api.post('/bills/generate/', {
+        patient_id: parseInt(selectedBillPatient),
+        amount: parseFloat(billAmount)
+      });
+      showToast("Bill generated successfully!");
+      setShowBillModal(false);
+      setBillAmount('');
+      setSelectedBillPatient('');
+      fetchDashboardData();
+    } catch (err) {
+      console.error("Failed to generate bill:", err.response?.data || err.message);
+      setError(`Failed to generate bill: ${err.response?.data?.error || err.message}`);
+    } finally {
+      setBillLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -263,6 +298,61 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {/* Billing Modal */}
+      {showBillModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-surface-container p-xl rounded-xl border border-outline-variant w-full max-w-md shadow-2xl">
+            <h3 className="font-headline-md text-headline-md mb-md text-on-surface">Generate Bill</h3>
+            <form onSubmit={handleCreateBill} className="flex flex-col gap-md">
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block">Select Patient</label>
+                <select 
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary focus:ring-1 focus:outline-none"
+                  value={selectedBillPatient}
+                  onChange={(e) => setSelectedBillPatient(e.target.value)}
+                  required
+                >
+                  <option value="">-- Choose a Patient --</option>
+                  {patients.map(p => (
+                    <option key={p.p_id} value={p.p_id}>
+                      {p.name} (ID: {p.p_id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="font-label-sm text-label-sm text-on-surface-variant mb-xs block mt-md">Amount (₹)</label>
+                <input 
+                  type="number"
+                  step="0.01"
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary focus:ring-1 focus:outline-none"
+                  value={billAmount}
+                  onChange={(e) => setBillAmount(e.target.value)}
+                  placeholder="e.g. 1500.00"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-sm mt-md">
+                <button 
+                  type="button" 
+                  onClick={() => setShowBillModal(false)}
+                  className="px-md py-sm border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-highest"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={billLoading}
+                  className="px-md py-sm bg-primary text-on-primary rounded-lg hover:opacity-90"
+                >
+                  {billLoading ? 'Generating...' : 'Create Bill'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <nav className="bg-surface-container-low dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim md:w-64 border-r border-outline-variant flex flex-col py-lg gap-md shrink-0 hidden md:flex min-h-screen sticky top-0">
         <div className="px-lg flex items-center gap-md mb-md">
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
@@ -353,15 +443,26 @@ const AdminDashboard = () => {
             </p>
           </div>
           {activeTab !== 'dashboard' && (
-            <div className="relative w-full md:w-64">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-              <input 
-                type="text" 
-                placeholder={`Search ${activeTab}...`}
-                className="w-full bg-surface-container-high border border-outline-variant rounded-full py-sm pl-10 pr-md text-on-surface focus:outline-none focus:border-primary"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex items-center gap-md w-full md:w-auto">
+              {activeTab === 'billing' && (
+                <button 
+                  onClick={() => setShowBillModal(true)}
+                  className="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md text-label-md flex items-center gap-sm hover:opacity-90 transition-all shrink-0"
+                >
+                  <span className="material-symbols-outlined">add</span>
+                  Create Bill
+                </button>
+              )}
+              <div className="relative w-full md:w-64">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                <input 
+                  type="text" 
+                  placeholder={`Search ${activeTab}...`}
+                  className="w-full bg-surface-container-high border border-outline-variant rounded-full py-sm pl-10 pr-md text-on-surface focus:outline-none focus:border-primary"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -594,25 +695,64 @@ const AdminDashboard = () => {
                 <thead className="bg-surface-container-high">
                   <tr>
                     <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Bill ID</th>
-                    <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Patient</th>
+                    <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Patient ID</th>
                     <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Amount</th>
-                    <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Date</th>
+                    <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant">Generated Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
-                  {allBills.filter(b => b.bill_id.toString().includes(searchTerm)).map((b, idx) => (
-                    <tr key={idx} className="hover:bg-surface-container-highest transition-colors">
-                      <td className="px-lg py-md font-body-md text-body-md text-on-surface">B-{b.bill_id}</td>
-                      <td className="px-lg py-md font-body-md text-body-md text-on-surface">P-{b.patient}</td>
-                      <td className="px-lg py-md font-body-md text-body-md text-on-surface">₹{b.amount}</td>
-                      <td className="px-lg py-md font-body-md text-body-md text-on-surface">{b.bill_date || 'N/A'}</td>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="4" className="px-lg py-xl text-center">
+                        <div className="flex items-center justify-center gap-sm">
+                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                          <span className="font-body-md text-on-surface-variant">Fetching billing records...</span>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                  ) : allBills.filter(b => 
+                      (b.b_id?.toString() || '').includes(searchTerm) || 
+                      (b.patient?.toString() || '').includes(searchTerm)
+                    ).length > 0 ? (
+                    allBills
+                      .filter(b => 
+                        (b.b_id?.toString() || '').includes(searchTerm) || 
+                        (b.patient?.toString() || '').includes(searchTerm)
+                      )
+                      .map((b, idx) => (
+                        <tr key={idx} className="hover:bg-surface-container-highest transition-colors">
+                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">B-{b.b_id}</td>
+                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">P-{b.patient}</td>
+                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">₹{b.amount}</td>
+                          <td className="px-lg py-md font-body-md text-body-md text-on-surface">{b.generated_at ? new Date(b.generated_at).toLocaleDateString() : 'N/A'}</td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="px-lg py-xl text-center text-on-surface-variant font-body-md">
+                        {error ? 'Failed to load billing data.' : 'No billing records found.'}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           )}
         </div>
+
+        {/* Toast Notification */}
+        {toast.show && (
+          <div className="fixed bottom-lg right-lg z-[100] animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className={`flex items-center gap-md px-lg py-md rounded-xl shadow-2xl border ${
+              toast.type === 'success' ? 'bg-success-container text-on-success-container border-success/20' : 'bg-error-container text-on-error-container border-error/20'
+            }`}>
+              <span className="material-symbols-outlined">
+                {toast.type === 'success' ? 'check_circle' : 'error'}
+              </span>
+              <p className="font-label-md text-label-md">{toast.message}</p>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
